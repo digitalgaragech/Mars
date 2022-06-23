@@ -7,24 +7,34 @@ let store = {
 // add our markup to the page
 const root = document.getElementById('root')
 
-const updateStore = (store, newState) => {
+const updateStore = (store, newState, roverName) => {
     store = Object.assign(store, newState)
-    render(root, store)
+    console.log(newState);
+    render(root, store,roverName)
 }
 
-const render = async (root, state) => {
-    root.innerHTML = App(state)
+const render = async (root, state, selectedRover) => {
+    root.innerHTML = App(state,selectedRover)
+    
+    document.getElementById("roverTabs").addEventListener("click", function(e) {
+        // e.target is the clicked element!
+        // If it was a list item
+        if(e.target && e.target.nodeName == "LI") {
+            // List item found!  Output the ID!
+            getImageOfTheDay(e.target.id,state);
+        }
+    });
 }
-
 
 // create content
-const App = (state) => {
+const App = (state,selectedRover) => {
     let { rovers, apod } = state
-
     return `
-        <header></header>
+        <header>${Greeting(state.user.name)}</header>
         <main>
-            ${Greeting(store.user.name)}
+            <ul id="roverTabs">
+                ${Tabs(rovers)}
+            </ul>
             <section>
                 <h3>Put things on the page!</h3>
                 <p>Here is an example section.</p>
@@ -36,7 +46,7 @@ const App = (state) => {
                     explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
                     but generally help with discoverability of relevant imagery.
                 </p>
-                ${ImageOfTheDay(apod)}
+                ${Dashboard(apod,selectedRover)}
             </section>
         </main>
         <footer></footer>
@@ -45,7 +55,7 @@ const App = (state) => {
 
 // listening for load event because page should load before any JS is called
 window.addEventListener('load', () => {
-    render(root, store)
+     render(root, store,"Curiosity");
 })
 
 // ------------------------------------------------------  COMPONENTS
@@ -63,43 +73,45 @@ const Greeting = (name) => {
     `
 }
 
-// Example of a pure function that renders infomation requested from the backend
-const ImageOfTheDay = (apod) => {
-
-    // If image does not already exist, or it is not from today -- request it again
-    const today = new Date()
-    const photodate = new Date(apod.date)
-    console.log(photodate.getDate(), today.getDate());
-
-    console.log(photodate.getDate() === today.getDate());
-    if (!apod || apod.date === today.getDate() ) {
-        getImageOfTheDay(store)
-    }
-
-    // check if the photo of the day is actually type video!
-    if (apod.media_type === "video") {
-        return (`
-            <p>See today's featured video <a href="${apod.url}">here</a></p>
-            <p>${apod.title}</p>
-            <p>${apod.explanation}</p>
-        `)
-    } else {
-        return (`
-            <img src="${apod.image.url}" height="350px" width="100%" />
-            <p>${apod.image.explanation}</p>
-        `)
+// Create a list of rovers
+const Tabs = (tab) => {
+    if (tab) {
+        const roverTabs = `
+            ${tab.map(t => (`<li id="${t}">${t}</li>`)).join('')}
+        `
+        
+        return roverTabs;
     }
 }
+
+// Example of a pure function that renders infomation requested from the backend
+const Dashboard = (apod,rover) => {
+    console.log(rover);
+    if (!apod ) {
+        getImageOfTheDay(rover,store)
+    }
+
+    let ingList ="No images today";
+    const nphotos = apod.image.photos.length;
+    for(let n=0; n<nphotos; n++){
+        ingList += `<p>${apod.image.photos[n].rover.name}</p><img src="${apod.image.photos[n].img_src}" height="350px" />`;
+    }
+
+    return (`
+        ${ingList}
+    `)
+}
+
 
 // ------------------------------------------------------  API CALLS
 
 // Example API call
-const getImageOfTheDay = (state) => {
+const getImageOfTheDay = (roverName,state) => {
     let { apod } = state
 
-    fetch(`http://localhost:3000/apod`)
+    fetch(`http://localhost:3000/apod/${roverName}`)
         .then(res => res.json())
-        .then(apod => updateStore(store, { apod }))
+        .then(apod => updateStore(store, { apod }, roverName))
 
-    return data
 }
+
