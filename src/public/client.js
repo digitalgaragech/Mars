@@ -9,7 +9,7 @@ const root = document.getElementById('root')
 
 const updateStore = (store, newState, roverName) => {
     store = Object.assign(store, newState)
-    console.log(newState);
+    console.log("newState"+newState);
     render(root, store,roverName)
 }
 
@@ -30,22 +30,12 @@ const render = async (root, state, selectedRover) => {
 const App = (state,selectedRover) => {
     let { rovers, apod } = state
     return `
-        <header>${Greeting(state.user.name)}</header>
+    <header>${Greeting(state.user.name)}</header>
         <main>
             <ul id="roverTabs">
                 ${Tabs(rovers)}
             </ul>
             <section>
-                <h3>Put things on the page!</h3>
-                <p>Here is an example section.</p>
-                <p>
-                    One of the most popular websites at NASA is the Astronomy Picture of the Day. In fact, this website is one of
-                    the most popular websites across all federal agencies. It has the popular appeal of a Justin Bieber video.
-                    This endpoint structures the APOD imagery and associated metadata so that it can be repurposed for other
-                    applications. In addition, if the concept_tags parameter is set to True, then keywords derived from the image
-                    explanation are returned. These keywords could be used as auto-generated hashtags for twitter or instagram feeds;
-                    but generally help with discoverability of relevant imagery.
-                </p>
                 ${Dashboard(apod,selectedRover)}
             </section>
         </main>
@@ -86,15 +76,18 @@ const Tabs = (tab) => {
 
 // Example of a pure function that renders infomation requested from the backend
 const Dashboard = (apod,rover) => {
-    console.log(rover);
     if (!apod ) {
         getImageOfTheDay(rover,store)
     }
 
     let ingList ="No images today";
+
+
+    ingList += `<h2>rover.name : ${apod.image.photos[0].rover.name}</h2>`;
+
     const nphotos = apod.image.photos.length;
     for(let n=0; n<nphotos; n++){
-        ingList += `<p>${apod.image.photos[n].rover.name}</p><img src="${apod.image.photos[n].img_src}" height="350px" />`;
+        ingList += `<img src="${apod.image.photos[n].img_src}" height="350px" />`;
     }
 
     return (`
