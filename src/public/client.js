@@ -1,8 +1,9 @@
 let store = {
-    user: { name: "Student" },
+    user: { name: " " },
     apod: '',
     rovers: ['Curiosity', 'Opportunity', 'Spirit'],
 }
+
 
 // add our markup to the page
 const root = document.getElementById('root')
@@ -17,11 +18,14 @@ const render = async (root, state, selectedRover) => {
     root.innerHTML = App(state,selectedRover)
     
     document.getElementById("roverTabs").addEventListener("click", function(e) {
-        // e.target is the clicked element!
-        // If it was a list item
         if(e.target && e.target.nodeName == "LI") {
-            // List item found!  Output the ID!
             getImageOfTheDay(e.target.id,state);
+        }
+    });
+
+    document.getElementById("imgList").addEventListener("click", function(e) {
+        if(e.target && e.target.nodeName == "IMG") {
+            showThisPic(e.target.src);
         }
     });
 }
@@ -36,7 +40,13 @@ const App = (state,selectedRover) => {
                 ${Tabs(rovers)}
             </ul>
             <section>
-                ${Dashboard(apod,selectedRover)}
+                ${roverInfos(apod,selectedRover)}
+            </section>
+            <section>
+                <img id="expandedImg" />
+                <ul id="imgList">
+                ${imgList(apod,selectedRover)}
+                </ul>
             </section>
         </main>
         <footer></footer>
@@ -69,31 +79,65 @@ const Tabs = (tab) => {
         const roverTabs = `
             ${tab.map(t => (`<li id="${t}">${t}</li>`)).join('')}
         `
-        
         return roverTabs;
     }
 }
 
-// Example of a pure function that renders infomation requested from the backend
-const Dashboard = (apod,rover) => {
+// get the rover infos
+const roverInfos = (apod,rover) => {
     if (!apod ) {
         getImageOfTheDay(rover,store)
     }
+    let roverInfos = '';
+    roverInfos += `<h2>Name of the Rover : ${apod.image.photos[0].rover.name}</h2>`;
+    roverInfos += `<p>Landing date on Mars : ${apod.image.photos[0].rover.landing_date}</p>`;
+    roverInfos += `<p>Launch date from Earth : ${apod.image.photos[0].rover.launch_date}</p>`;
+    roverInfos += `<p>Status : ${apod.image.photos[0].rover.status}</p>`;
+    return (`
+        ${roverInfos}
+    `)
+}
 
-    let ingList ="No images today";
+// Get the list of images
+const imgList = (apod,rover) => {
+    if (!apod ) {
+        getImageOfTheDay(rover,store)
+    }
+    let imgList = '';
+    
 
 
-    ingList += `<h2>rover.name : ${apod.image.photos[0].rover.name}</h2>`;
+    let photos = Immutable.Map = apod.image.photos;
+    console.log(photos);
 
-    const nphotos = apod.image.photos.length;
+
+
+
+
+
+
+
+    let nphotos = apod.image.photos.length;
+    if(nphotos>=5){
+        nphotos=5;
+    } 
     for(let n=0; n<nphotos; n++){
-        ingList += `<img src="${apod.image.photos[n].img_src}" height="350px" />`;
+        imgList += `<li><img src="${apod.image.photos[n].img_src}" width="350" /></li>`;
     }
 
     return (`
-        ${ingList}
+        ${imgList}
     `)
 }
+
+const showThisPic = (thisPic) => {
+    const expandedImg = document.getElementById('expandedImg');
+    expandedImg.src = thisPic;
+}
+
+
+
+
 
 
 // ------------------------------------------------------  API CALLS
