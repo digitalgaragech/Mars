@@ -10,7 +10,6 @@ const root = document.getElementById('root')
 
 const updateStore = (store, newState, roverName) => {
     store = Object.assign(store, newState)
-    console.log("newState"+newState);
     render(root, store,roverName)
 }
 
@@ -34,7 +33,7 @@ const render = async (root, state, selectedRover) => {
 const App = (state,selectedRover) => {
     let { rovers, apod } = state
     return `
-    <header>${Greeting(state.user.name)}</header>
+    <header>Mars Dashboard</header>
         <main>
             <ul id="roverTabs">
                 ${Tabs(rovers)}
@@ -60,22 +59,10 @@ window.addEventListener('load', () => {
 
 // ------------------------------------------------------  COMPONENTS
 
-// Pure function that renders conditional information -- THIS IS JUST AN EXAMPLE, you can delete it.
-const Greeting = (name) => {
-    if (name) {
-        return `
-            <h1>Welcome, ${name}!</h1>
-        `
-    }
-
-    return `
-        <h1>Hello!</h1>
-    `
-}
-
 // Create a list of rovers
 const Tabs = (tab) => {
     if (tab) {
+         // console.log(tab); [ "Curiosity", "Opportunity", "Spirit" ]
         const roverTabs = `
             ${tab.map(t => (`<li id="${t}">${t}</li>`)).join('')}
         `
@@ -103,31 +90,19 @@ const imgList = (apod,rover) => {
     if (!apod ) {
         getImageOfTheDay(rover,store)
     }
-    let imgList = '';
+
+    const imgFiles = [];
     
-
-
-    let photos = Immutable.Map = apod.image.photos;
-    console.log(photos);
-
-
-
-
-
-
-
-
     let nphotos = apod.image.photos.length;
     if(nphotos>=5){
         nphotos=5;
     } 
     for(let n=0; n<nphotos; n++){
-        imgList += `<li><img src="${apod.image.photos[n].img_src}" width="350" /></li>`;
+        imgFiles.push(apod.image.photos[n].img_src);
     }
+    const imgList = `${imgFiles.map(i => (`<li><img src="${i}" width="350" /></li>`)).join('')}`
 
-    return (`
-        ${imgList}
-    `)
+    return imgList;
 }
 
 const showThisPic = (thisPic) => {
@@ -136,11 +111,7 @@ const showThisPic = (thisPic) => {
 }
 
 
-
-
-
-
-// ------------------------------------------------------  API CALLS
+// ------------------------------------------------------  API CALL
 
 // Example API call
 const getImageOfTheDay = (roverName,state) => {
